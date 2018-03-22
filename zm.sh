@@ -3,7 +3,7 @@
 set -e
 
 ZM_HOST=localhost
-ZM_PORT=80
+ZM_PORT=10080
 ZM_PATH=zm
 ZM_SSL=false
 QUIET=false
@@ -50,6 +50,46 @@ zm_stop() {
 
 zm_restart() {
     curl -qs -b "$COOKIE_FILE" "${ZM_URL}/api/states/change/restart.json"
+}
+
+zm_status() {
+    # pass true as $1 for quiet mode
+    if get_daemon_state | grep -q '"result":1'
+    then
+        if [[ "$1" == true ]]
+        then
+            echo 1
+        else
+            echo "ZM daemon is running"
+        fi
+    else
+        if [[ "$1" == true ]]
+        then
+            echo 0
+        else
+            echo 'ZM daemon is down!' >&2
+        fi
+        exit 3
+    fi
+}
+
+zm_watchdog() {
+    while :
+    do
+        # check state and restart if necessary
+        if [[ "$(zm_status true)" != "1" ]]
+        then
+            if [[ "$QUIET" != "true" ]]
+            then
+                echo "Zoneminder daemon is stopped. Restarting." >&2
+                zm_start
+                echo
+            else
+                zm_start > /dev/null
+            fi
+        fi
+        sleep 10
+    done
 }
 
 case "$1" in
@@ -114,29 +154,16 @@ case "$1" in
         get_daemon_state
         ;;
     status)
-        if get_daemon_state | grep -q '"result":1'
-        then
-            if [[ "$QUIET" == true ]]
-            then
-                echo 1
-            else
-                echo "ZM daemon is running"
-            fi
-        else
-            if [[ "$QUIET" == true ]]
-            then
-                echo 0
-            else
-                echo 'ZM daemon is down!' >&2
-            fi
-            exit 3
-        fi
+        zm_status "$QUIET"
         ;;
     start)
         zm_start
         ;;
     stop)
         zm_stop
+        ;;
+    watchdog)
+        zm_watchdog
         ;;
     restart)
         zm_restart
