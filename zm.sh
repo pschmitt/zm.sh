@@ -78,6 +78,10 @@ zm_status() {
 zm_watchdog() {
     while :
     do
+        if [[ ! -r "$COOKIE_FILE" ]] && [[ -n "$ZM_USERNAME" ]]
+        then
+            login
+        fi
         # check state and restart if necessary
         if [[ "$(zm_status true)" != "1" ]]
         then
