@@ -17,6 +17,10 @@ usage() {
 }
 
 login() {
+    if [[ "$QUIET" != "true" ]]
+    then
+        echo "Logging into ZM as $ZM_USERNAME"
+    fi
     curl -qs -d \
         "username=${ZM_USERNAME}&password=${ZM_PASSWORD}&action=login&view=console" \
         -c "$COOKIE_FILE" "${ZM_URL}/index.php" > /dev/null
