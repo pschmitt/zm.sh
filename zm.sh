@@ -10,6 +10,8 @@ QUIET=false
 
 COOKIE_FILE=/tmp/zm.cookie
 
+trap 'rm "$COOKIE_FILE"' SIGINT SIGTERM EXIT
+
 usage() {
     echo "Usage: $(basename $0) [-H HOST] [-P PORT] [-u USERNAME -p PASSWORD] [-z PATH] ACTION"
 }
@@ -17,7 +19,7 @@ usage() {
 login() {
     curl -qs -d \
         "username=${ZM_USERNAME}&password=${ZM_PASSWORD}&action=login&view=console" \
-        -c "$COOKIE_FILE" "${ZM_URL}/index.php"
+        -c "$COOKIE_FILE" "${ZM_URL}/index.php" > /dev/null
 }
 
 get_version() {
@@ -148,30 +150,66 @@ fi
 
 case "$1" in
     state)
+        if [[ -n "$ZM_USERNAME" ]]
+        then
+            login
+        fi
         get_state
         ;;
     daemon-state)
+        if [[ -n "$ZM_USERNAME" ]]
+        then
+            login
+        fi
         get_daemon_state
         ;;
     status)
+        if [[ -n "$ZM_USERNAME" ]]
+        then
+            login
+        fi
         zm_status "$QUIET"
         ;;
     start)
+        if [[ -n "$ZM_USERNAME" ]]
+        then
+            login
+        fi
         zm_start
         ;;
     stop)
+        if [[ -n "$ZM_USERNAME" ]]
+        then
+            login
+        fi
         zm_stop
         ;;
     watchdog)
+        if [[ -n "$ZM_USERNAME" ]]
+        then
+            login
+        fi
         zm_watchdog
         ;;
     restart)
+        if [[ -n "$ZM_USERNAME" ]]
+        then
+            login
+        fi
         zm_restart
         ;;
     monitors)
+        if [[ -n "$ZM_USERNAME" ]]
+        then
+            login
+        fi
         get_monitors
         ;;
     events)
+        if [[ -n "$ZM_USERNAME" ]]
+        then
+            login
+        fi
         get_events
         ;;
     *)
