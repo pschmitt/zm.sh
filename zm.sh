@@ -10,7 +10,7 @@ QUIET=false
 
 COOKIE_FILE=/tmp/zm.cookie
 
-trap 'rm "$COOKIE_FILE"' SIGINT SIGTERM EXIT
+trap 'rm -f "$COOKIE_FILE"' SIGINT SIGTERM EXIT
 
 usage() {
     echo "Usage: $(basename $0) [-H HOST] [-P PORT] [-u USERNAME -p PASSWORD] [-z PATH] ACTION"
